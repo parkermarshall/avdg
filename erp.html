@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AVDG Produção - Sistema ERP Modernizado</title>
+<link rel="icon" href="img/fouet.png" type="image/png" />
+
+<style>
+  /* Reset básico */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f6f8;
+    color: #333;
+    padding-top: 60px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header fixo topo */
+  header.header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 60px;
+    background-color: #222;
+    color: #eee;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+    z-index: 1000;
+  }
+  .header .logo {
+    font-weight: 700;
+    font-size: 20px;
+    user-select: none;
+  }
+  .header nav.menu {
+    flex-grow: 1;
+    margin-left: 40px;
+  }
+  .header nav.menu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 25px;
+  }
+  .header nav.menu ul li {
+    cursor: pointer;
+    font-weight: 600;
+    color: #ccc;
+    transition: color 0.3s;
+    user-select: none;
+  }
+  .header nav.menu ul li:hover,
+  .header nav.menu ul li.active {
+    color: #4CAF50;
+  }
+  #relogio {
+    font-family: monospace;
+    font-size: 14px;
+    color: #999;
+    user-select: none;
+  }
+
+  /* Main */
+  main {
+    max-width: 1100px;
+    margin: 20px auto 60px;
+    padding: 10px 20px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    min-height: 600px;
+    flex-grow: 1;
+  }
+
+  /* Cards dashboard */
+  .dashboard-cards {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+  }
+  .card {
+    background: #fefefe;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+    border-radius: 8px;
+    padding: 20px;
+    flex: 1 1 250px;
+    min-width: 250px;
+  }
+  .card h3 {
+    margin-top: 0;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #555;
+  }
+  .card .value {
+    margin-top: 10px;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #222;
+  }
+
+  /* Chart container */
+  #graficoFaturamento {
+    background: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+  }
+
+  /* Tabela */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.9rem;
+  }
+  th {
+    background: #f0f0f0;
+    font-weight: 700;
+  }
+  tbody tr:hover {
+    background: #f9f9f9;
+  }
+
+  /* Formulários */
+  form {
+    margin-bottom: 20px;
+  }
+  form input[type="text"],
+  form input[type="number"],
+  form input[type="date"],
+  form select {
+    padding: 8px 12px;
+    margin-right: 12px;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 140px;
+    transition: border-color 0.3s;
+  }
+  form input[type="text"]:focus,
+  form input[type="number"]:focus,
+  form input[type="date"]:focus,
+  form select:focus {
+    border-color: #4CAF50;
+    outline: none;
+  }
+  form label {
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 4px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+  }
+  button:disabled {
+    background-color: #9e9e9e;
+    cursor: not-allowed;
+  }
+  button:hover:not(:disabled) {
+    background-color: #45a049;
+  }
+
+  /* Lista carrinho */
+  #listaCarrinho {
+    list-style: decimal inside;
+    padding-left: 0;
+    margin-top: 10px;
+    max-height: 140px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fafafa;
+  }
+
+  /* Paginação */
+  .paginacao {
+    margin-top: 10px;
+    text-align: center;
+  }
+  .paginacao button {
+    margin: 0 4px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+
+  /* Notificação */
+  #notificacao {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    background: #4caf50;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    font-weight: 600;
+    z-index: 2000;
+  }
+  #notificacao.error {
+    background: #e74c3c;
+  }
+
+  /* Responsivo */
+  @media (max-width: 768px) {
+    .dashboard-cards {
+      flex-direction: column;
+    }
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="date"],
+    form select {
+      min-width: 100%;
+      margin-right: 0;
+    }
+    .header nav.menu ul {
+      gap: 12px;
+      font-size: 14px;
+    }
+  }
+
+  /* Rodapé fixo */
+  footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #222;
+    color: #ddd;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    user-select: none;
+  }
+
+  /* Modal básico */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+  }
+  .modal-bg.active {
+    display: flex;
+  }
+  .modal {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .modal h2 {
+    margin-top: 0;
+  }
+  .modal-buttons {
+    text-align: right;
+    margin-top: 20px;
+  }
+  .modal-buttons button {
+    margin-left: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">AVDG Produção</div>
+  <nav class="menu">
+    <ul>
+      <li class="active" data-secao="dashboard">Dashboard</li>
+      <li data-secao="produtos">Produtos</li>
+      <li data-secao="pedidos">Pedidos</li>
+      <li data-secao="faturados">Faturados</li>
+      <li data-secao="relatorios">Relatórios</li>
+    </ul>
+  </nav>
+  <div id="relogio">00:00</div>
+</header>
+
+<main>
+  <!-- Dashboard -->
+  <section id="dashboard" class="secao">
+    <div class="dashboard-cards">
+      <div class="card">
+        <h3>Total Faturado</h3>
+        <div id="totalFaturado" class="value">R$ 0,00</div>
+      </div>
+      <div class="card">
+        <h3>Pedidos Faturados</h3>
+        <div id="pedidosFaturados" class="value">0</div>
+      </div>
+      <div class="card">
+        <h3>Ticket Médio</h3>
+        <div id="ticketMedio" class="value">R$ 0,00</div>
+      </div>
+    </div>
+    <div id="graficoFaturamento">
+      <canvas id="chartFaturamento" height="120"></canvas>
+    </div>
+  </section>
+
+  <!-- Produtos -->
+  <section id="produtos" class="secao" style="display:none;">
+    <form id="formProduto">
+      <label for="pn">Part Number (PN)</label>
+      <input type="text" id="pn" name="pn" required autocomplete="off"/>
+      <label for="descricao">Produto</label>
+      <input type="text" id="descricao" name="descricao" required autocomplete="off"/>
+      <label for="preco">Preço (R$)</label>
+      <input type="number" id="preco" name="preco" step="0.01" required min="0"/>
+      <button id="btnSalvarProduto" type="submit" disabled>Salvar Produto</button>
+    </form>
+    <hr />
+    <div>
+      <input type="text" id="buscarProduto" placeholder="Buscar produto..." style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc;" />
+      <div id="listaProdutos"></div>
+      <div id="paginacaoProdutos" class="paginacao"></div>
+    </div>
+  </section>
+
+  <!-- Pedidos -->
+  <section id="pedidos" class="secao" style="display:none;">
+    <form id="formPedido" autocomplete="off">
+      <label for="nome">Nome</label>
+      <input type="text" id="nome" required autocomplete="off" />
+      <label for="data">Data</label>
+      <input type="date" id="data" required />
+      <label for="pagamento">Forma de Pagamento</label>
+      <select id="pagamento" required>
+        <option value="">Selecione</option>
+        <option value="PIX">PIX</option>
+        <option value="Cartão">Cartão</option>
+        <option value="Dinheiro">Dinheiro</option>
+      </select>
+      <br />
+      <label for="produtoPedido">Produto (PN)</label>
+      <input list="listaPN" id="produtoPedido" autocomplete="off" />
+      <datalist id="listaPN"></datalist>
+      <label for="quantidade">Quantidade</label>
+      <input type="number" id="quantidade" min="1" />
+      <button type="button" id="btnAdicionar">Adicionar ao Carrinho</button>
+    </form>
+    <hr />
+    <div>
+      <label for="vendedor">Vendedor</label>
+      <select id="vendedor" required>
+        <option value="">Selecione</option>
+        <option value="Aline Vitalino">Aline Vitalino</option>
+        <option value="Vanessa">Vanessa</option>
+        <option value="Isa">Isa</option>
+        <option value="Maria">Maria</option>
+      </select>
+      <label for="valorTotal" style="margin-left:20px;">Valor Total (R$)</label>
+      <input type="text" id="valorTotal" readonly value="0.00" style="width:100px; text-align:right;" />
+    </div>
+    <ul id="listaCarrinho"></ul>
+    <button id="btnSalvarPedido" disabled>Salvar Pedido</button>
+    <button id="btnLimparPedido" style="margin-left:10px;">Limpar Formulário</button>
+  </section>
+
+  <!-- Faturados -->
+  <section id="faturados" class="secao" style="display:none;">
+    <input type="text" id="buscarFaturados" placeholder="Buscar por Cliente ou Vendedor..." style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc;" />
+    <div id="listaFaturados">Carregando pedidos faturados...</div>
+    <div id="paginacaoFaturados" class="paginacao"></div>
+  </section>
+
+  <!-- Relatórios -->
+  <section id="relatorios" class="secao" style="display:none;">
+    <p>Ainda em desenvolvimento...</p>
+  </section>
+</main>
+
+<footer>
+  2025 Aline Vitalino Chocolate - Todos os Direitos Reservados.
+</footer>
+
+<div id="notificacao"></div>
+
+<!-- Modal confirmação -->
+<div class="modal-bg" id="modalConfirmar">
+  <div class="modal">
+    <h2>Confirmação</h2>
+    <p id="msgConfirmar"></p>
+    <div class="modal-buttons">
+      <button id="btnConfirmarSim">Sim</button>
+      <button id="btnConfirmarNao">Não</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // URLs Firebase
+  const URL_PEDIDOS = "https://teste1723-819a6-default-rtdb.firebaseio.com/pedidos.json";
+  const URL_PRODUTOS = "https://cadastro-de-produto-95c22-default-rtdb.firebaseio.com/produtos.json";
+
+  // Estado global
+  let listaProdutos = {};
+  let carrinho = [];
+  let pedidosFaturados = {};
+  let paginaAtualProdutos = 1;
+  let itensPorPaginaProdutos = 6;
+  let paginaAtualFaturados = 1;
+  let itensPorPaginaFaturados = 8;
+  let chartFaturamento = null;
+
+  window.onload = () => {
+    configurarMenu();
+    carregarProdutos();
+    carregarPedidosFaturados();
+    configurarEventos();
+    carregarFormularioPedido();
+    atualizarRelogio();
+    setInterval(atualizarRelogio, 60000);
+  };
+
+  // MENU NAVEGAÇÃO
+  function configurarMenu() {
+    const itensMenu = document.querySelectorAll(".menu ul li");
+    itensMenu.forEach(item => {
+      item.addEventListener("click", () => {
+        itensMenu.forEach(i => i.classList.remove("active"));
+        item.classList.add("active");
+        mostrarSecao(item.dataset.secao);
+      });
+    });
+    mostrarSecao('dashboard');
+  }
+
+  function mostrarSecao(secao) {
+    document.querySelectorAll("main .secao").forEach(s => {
+      s.style.display = s.id === secao ? "block" : "none";
+    });
+  }
+
+  // ATUALIZA RELÓGIO
+  function atualizarRelogio() {
+    const relogio = document.getElementById("relogio");
+    if (!relogio) return;
+    const now = new Date();
+    let h = now.getHours();
+    let m = now.getMinutes();
+    h = h < 10 ? "0" + h : h;
+    m = m < 10 ? "0" + m : m;
+    relogio.textContent = `${h}:${m}`;
+  }
+
+  // MOSTRA NOTIFICAÇÃO
+  function mostrarNotificacao(mensagem, tipo = "success") {
+    const noti = document.getElementById("notificacao");
+    noti.textContent = mensagem;
+    noti.className = tipo === "error" ? "error" : "";
+    noti.style.opacity = "1";
+    setTimeout(() => {
+      noti.style.opacity = "0";
+    }, 3500);
+  }
+
+  // CARREGAR PRODUTOS + PAGINAÇÃO + FILTRO
+  function carregarProdutos() {
+    fetch(URL_PRODUTOS)
+      .then(res => res.json())
+      .then(data => {
+        listaProdutos = data || {};
+        paginaAtualProdutos = 1;
+        atualizarTabelaProdutos();
+        configurarAutocomplete();
+      })
+      .catch(() => {
+        document.getElementById("listaProdutos").innerHTML = "<p>Erro ao carregar produtos.</p>";
+      });
+  }
+
+  // ATUALIZAR TABELA PRODUTOS
+  function atualizarTabelaProdutos() {
+    const filtro = document.getElementById("buscarProduto").value.toLowerCase();
+    const produtosArray = Object.values(listaProdutos).filter(p => 
+      p && (p.PN.toLowerCase().includes(filtro) || p.Produto.toLowerCase().includes(filtro))
+    );
+
+    const totalPaginas = Math.ceil(produtosArray.length / itensPorPaginaProdutos);
+    if (paginaAtualProdutos > totalPaginas) paginaAtualProdutos = totalPaginas || 1;
+
+    const inicio = (paginaAtualProdutos - 1) * itensPorPaginaProdutos;
+    const paginaProdutos = produtosArray.slice(inicio, inicio + itensPorPaginaProdutos);
+
+    let html = `<table><thead><tr><th>PN</th><th>Produto</th><th>Preço (R$)</th></tr></thead><tbody>`;
+    if(paginaProdutos.length === 0) {
+      html += `<tr><td colspan="3" style="text-align:center">Nenhum produto encontrado</td></tr>`;
+    } else {
+      paginaProdutos.forEach(p => {
+        html += `<tr><td>${p.PN}</td><td>${p.Produto}</td><td>R$ ${parseFloat(p.Preço).toFixed(2)}</td></tr>`;
+      });
+    }
+    html += `</tbody></table>`;
+
+    document.getElementById("listaProdutos").innerHTML = html;
+
+    // Paginação
+    const paginacaoEl = document.getElementById("paginacaoProdutos");
+    paginacaoEl.innerHTML = "";
+    for(let i=1; i<=totalPaginas; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      if(i === paginaAtualProdutos) btn.disabled = true;
+      btn.addEventListener("click", () => {
+        paginaAtualProdutos = i;
+        atualizarTabelaProdutos();
+      });
+      paginacaoEl.appendChild(btn);
+    }
+  }
+
+  // FILTRO PRODUTOS INPUT
+  document.getElementById("buscarProduto").addEventListener("input", () => {
+    paginaAtualProdutos = 1;
+    atualizarTabelaProdutos();
+  });
+
+  // CONFIGURAR AUTOCOMPLETE PN
+  function configurarAutocomplete() {
+    const datalist = document.getElementById("listaPN");
+    datalist.innerHTML = "";
+    Object.values(listaProdutos).forEach(p => {
+      if(!p) return;
+      const option = document.createElement("option");
+      option.value = p.PN;
+      datalist.appendChild(option);
+    });
+  }
+
+  // VALIDA FORMULÁRIO PRODUTO E BOTÃO SALVAR
+  const formProduto = document.getElementById("formProduto");
+  const btnSalvarProduto = document.getElementById("btnSalvarProduto");
+
+  formProduto.addEventListener("input", () => {
+    const pn = formProduto.pn.value.trim();
+    const prod = formProduto.descricao.value.trim();
+    const preco = formProduto.preco.value.trim();
+    btnSalvarProduto.disabled = !(pn && prod && preco && parseFloat(preco) >= 0);
+  });
+
+  formProduto.addEventListener("submit", e => {
+    e.preventDefault();
+    salvarProduto();
+  });
+
+  // SALVAR PRODUTO NO FIREBASE
+  function salvarProduto() {
+    const pn = formProduto.pn.value.trim();
+    const prod = formProduto.descricao.value.trim();
+    const preco = parseFloat(formProduto.preco.value.trim());
+
+    // Checar duplicados por PN
+    const existe = Object.values(listaProdutos).some(p => p && p.PN === pn);
+    if(existe) {
+      mostrarNotificacao("PN já cadastrado!", "error");
+      return;
+    }
+
+    const novoProduto = {PN: pn, Produto: prod, Preço: preco.toFixed(2)};
+    fetch(URL_PRODUTOS.replace(".json","") + ".json", {
+      method: "POST",
+      body: JSON.stringify(novoProduto),
+      headers: {"Content-Type": "application/json"}
+    })
+    .then(res => {
+      if(!res.ok) throw new Error("Falha ao salvar produto");
+      return res.json();
+    })
+    .then(() => {
+      mostrarNotificacao("Produto salvo com sucesso!");
+      formProduto.reset();
+      btnSalvarProduto.disabled = true;
+      carregarProdutos();
+    })
+    .catch(() => {
+      mostrarNotificacao("Erro ao salvar produto.", "error");
+    });
+  }
+
+  // PEDIDOS
+  const formPedido = document.getElementById("formPedido");
+  const btnAdicionar = document.getElementById("btnAdicionar");
+  const listaCarrinho = document.getElementById("listaCarrinho");
+  const vendedorEl = document.getElementById("vendedor");
+  const valorTotalEl = document.getElementById("valorTotal");
+  const btnSalvarPedido = document.getElementById("btnSalvarPedido");
+  const btnLimparPedido = document.getElementById("btnLimparPedido");
+
+  btnAdicionar.addEventListener("click", () => {
+    adicionarAoCarrinho();
+  });
+
+  vendedorEl.addEventListener("change", verificarPedidoCompleto);
+  formPedido.nome.addEventListener("input", verificarPedidoCompleto);
+  formPedido.data.addEventListener("change", verificarPedidoCompleto);
+  formPedido.pagamento.addEventListener("change", verificarPedidoCompleto);
+
+  // Adicionar ao carrinho
+  function adicionarAoCarrinho() {
+    const pn = formPedido.produtoPedido.value.trim();
+    const qtd = parseInt(formPedido.quantidade.value);
+    if (!pn) {
+      mostrarNotificacao("Informe o PN do produto", "error");
+      return;
+    }
+    if (!qtd || qtd < 1) {
+      mostrarNotificacao("Informe a quantidade válida", "error");
+      return;
+    }
+    // Verificar se o PN existe
+    const prod = Object.values(listaProdutos).find(p => p && p.PN === pn);
+    if (!prod) {
+      mostrarNotificacao("Produto não encontrado", "error");
+      return;
+    }
+
+    // Adicionar ou somar no carrinho
+    let itemCarrinho = carrinho.find(i => i.PN === pn);
+    if (itemCarrinho) {
+      itemCarrinho.Quantidade += qtd;
+    } else {
+      carrinho.push({PN: pn, Produto: prod.Produto, Preço: parseFloat(prod.Preço), Quantidade: qtd});
+    }
+    atualizarCarrinho();
+    formPedido.produtoPedido.value = "";
+    formPedido.quantidade.value = "";
+    salvarFormularioPedido();
+    verificarPedidoCompleto();
+  }
+
+  // Atualizar lista carrinho e valor total
+  function atualizarCarrinho() {
+    listaCarrinho.innerHTML = "";
+    let total = 0;
+    carrinho.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = `${item.Produto} - ${item.PN} - Qtd: ${item.Quantidade} - R$ ${(item.Preço * item.Quantidade).toFixed(2)}`;
+      listaCarrinho.appendChild(li);
+      total += item.Preço * item.Quantidade;
+    });
+    valorTotalEl.value = total.toFixed(2);
+  }
+
+  // Limpar formulário pedido
+  btnLimparPedido.addEventListener("click", () => {
+    mostrarModal("Tem certeza que deseja limpar o formulário?", () => {
+      formPedido.reset();
+      vendedorEl.value = "";
+      carrinho = [];
+      atualizarCarrinho();
+      btnSalvarPedido.disabled = true;
+      salvarFormularioPedido();
+    });
+  });
+
+  // Salvar pedido no Firebase
+  btnSalvarPedido.addEventListener("click", () => {
+    salvarPedido();
+  });
+
+  // Validar se formulário completo para habilitar salvar pedido
+  function verificarPedidoCompleto() {
+    const nome = formPedido.nome.value.trim();
+    const data = formPedido.data.value;
+    const pagamento = formPedido.pagamento.value;
+    const vendedor = vendedorEl.value;
+    const temItens = carrinho.length > 0;
+    btnSalvarPedido.disabled = !(nome && data && pagamento && vendedor && temItens);
+  }
+
+  // Salvar pedido no Firebase
+  function salvarPedido() {
+    const nome = formPedido.nome.value.trim().toUpperCase();
+    const data = formPedido.data.value;
+    const pagamento = formPedido.pagamento.value;
+    const vendedor = vendedorEl.value;
+    const valorTotal = parseFloat(valorTotalEl.value);
+
+    const novoPedido = {
+      "Cliente": nome,
+      "Data": data,
+      "Forma de Pagamento": pagamento,
+      "Nº Pedido": gerarNumeroPedido(),
+      "PN": carrinho.map(i => i.PN).join(", "),
+      "Valor": valorTotal.toFixed(2),
+      "Vendedor": vendedor
+    };
+
+    fetch(URL_PEDIDOS.replace(".json","") + ".json", {
+      method: "POST",
+      body: JSON.stringify(novoPedido),
+      headers: {"Content-Type": "application/json"}
+    })
+    .then(res => {
+      if(!res.ok) throw new Error("Falha ao salvar pedido");
+      return res.json();
+    })
+    .then(() => {
+      mostrarNotificacao("Pedido salvo com sucesso!");
+      formPedido.reset();
+      vendedorEl.value = "";
+      carrinho = [];
+      atualizarCarrinho();
+      btnSalvarPedido.disabled = true;
+      salvarFormularioPedido();
+      carregarPedidosFaturados();
+      carregarDashboard();
+    })
+    .catch(() => {
+      mostrarNotificacao("Erro ao salvar pedido.", "error");
+    });
+  }
+
+  // Gerar Nº Pedido simples (timestamp)
+  function gerarNumeroPedido() {
+    return "PED" + Date.now();
+  }
+
+  // SALVAR FORMULÁRIO PEDIDO no localStorage para salvamento automático
+  function salvarFormularioPedido() {
+    const dados = {
+      nome: formPedido.nome.value,
+      data: formPedido.data.value,
+      pagamento: formPedido.pagamento.value,
+      vendedor: vendedorEl.value,
+      carrinho: carrinho
+    };
+    localStorage.setItem("formPedido", JSON.stringify(dados));
+  }
+
+  // CARREGAR FORMULÁRIO PEDIDO do localStorage
+  function carregarFormularioPedido() {
+    const dados = localStorage.getItem("formPedido");
+    if(!dados) return;
+    const obj = JSON.parse(dados);
+    formPedido.nome.value = obj.nome || "";
+    formPedido.data.value = obj.data || "";
+    formPedido.pagamento.value = obj.pagamento || "";
+    vendedorEl.value = obj.vendedor || "";
+    carrinho = obj.carrinho || [];
+    atualizarCarrinho();
+    verificarPedidoCompleto();
+  }
+
+  // CARREGAR PEDIDOS FATURADOS
+  function carregarPedidosFaturados(filtro = "") {
+    fetch(URL_PEDIDOS)
+      .then(res => {
+        if(!res.ok) throw new Error("Erro na requisição");
+        return res.json();
+      })
+      .then(data => {
+        pedidosFaturados = data || {};
+        paginaAtualFaturados = 1;
+        atualizarTabelaFaturados(filtro);
+        carregarDashboard();
+        carregarGraficoFaturamento();
+      })
+      .catch(() => {
+        document.getElementById("listaFaturados").innerHTML = "<p>Erro ao carregar pedidos faturados.</p>";
+      });
+  }
+
+  // ATUALIZAR TABELA FATURADOS COM FILTRO E PAGINAÇÃO
+  function atualizarTabelaFaturados(filtro = "") {
+    const filtroLower = filtro.toLowerCase();
+    const pedidosArray = Object.values(pedidosFaturados).filter(p => 
+      p && (
+        (p.Cliente && p.Cliente.toLowerCase().includes(filtroLower)) ||
+        (p.Vendedor && p.Vendedor.toLowerCase().includes(filtroLower))
+      )
+    );
+
+    const totalPaginas = Math.ceil(pedidosArray.length / itensPorPaginaFaturados);
+    if(paginaAtualFaturados > totalPaginas) paginaAtualFaturados = totalPaginas || 1;
+
+    const inicio = (paginaAtualFaturados - 1) * itensPorPaginaFaturados;
+    const paginaPedidos = pedidosArray.slice(inicio, inicio + itensPorPaginaFaturados);
+
+    let html = `<table><thead><tr>
+      <th>Cliente</th><th>Data</th><th>Pedido Nº</th><th>PN</th><th>Valor (R$)</th><th>Vendedor</th></tr></thead><tbody>`;
+    if(paginaPedidos.length === 0) {
+      html += `<tr><td colspan="6" style="text-align:center">Nenhum pedido encontrado</td></tr>`;
+    } else {
+      paginaPedidos.forEach(p => {
+        html += `<tr>
+          <td>${p.Cliente || ""}</td>
+          <td>${p.Data || ""}</td>
+          <td>${p["Nº Pedido"] || ""}</td>
+          <td>${p.PN || ""}</td>
+          <td>R$ ${parseFloat(p.Valor || 0).toFixed(2)}</td>
+          <td>${p.Vendedor || ""}</td>
+        </tr>`;
+      });
+    }
+    html += `</tbody></table>`;
+
+    document.getElementById("listaFaturados").innerHTML = html;
+
+    // Paginação
+    const paginacaoEl = document.getElementById("paginacaoFaturados");
+    paginacaoEl.innerHTML = "";
+    for(let i=1; i<=totalPaginas; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      if(i === paginaAtualFaturados) btn.disabled = true;
+      btn.addEventListener("click", () => {
+        paginaAtualFaturados = i;
+        atualizarTabelaFaturados(filtro);
+      });
+      paginacaoEl.appendChild(btn);
+    }
+  }
+
+  // FILTRO FATURADOS
+  document.getElementById("buscarFaturados").addEventListener("input", e => {
+    paginaAtualFaturados = 1;
+    atualizarTabelaFaturados(e.target.value);
+  });
+
+  // CARREGAR DASHBOARD
+  function carregarDashboard() {
+    let total = 0;
+    let qtd = 0;
+    Object.values(pedidosFaturados).forEach(p => {
+      if(p && p.Valor) {
+        total += parseFloat(p.Valor);
+        qtd++;
+      }
+    });
+    document.getElementById("totalFaturado").textContent = `R$ ${total.toFixed(2)}`;
+    document.getElementById("pedidosFaturados").textContent = qtd;
+    const ticketMedio = qtd ? (total / qtd) : 0;
+    document.getElementById("ticketMedio").textContent = `R$ ${ticketMedio.toFixed(2)}`;
+  }
+
+  // CARREGAR GRÁFICO FATURAMENTO (Total por mês)
+  function carregarGraficoFaturamento() {
+    // Agrupar total por mês (ex: "2025-07")
+    const dadosPorMes = {};
+    Object.values(pedidosFaturados).forEach(p => {
+      if(p && p.Data && p.Valor) {
+        const mes = p.Data.substring(0,7);
+        if(!dadosPorMes[mes]) dadosPorMes[mes] = 0;
+        dadosPorMes[mes] += parseFloat(p.Valor);
+      }
+    });
+
+    // Ordenar meses
+    const meses = Object.keys(dadosPorMes).sort();
+    const valores = meses.map(m => dadosPorMes[m].toFixed(2));
+
+    if(chartFaturamento) {
+      chartFaturamento.destroy();
+    }
+
+    const ctx = document.getElementById("chartFaturamento").getContext("2d");
+    chartFaturamento = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: meses,
+        datasets: [{
+          label: "Faturamento Mensal (R$)",
+          data: valores,
+          borderColor: "#4CAF50",
+          backgroundColor: "rgba(76,175,80,0.2)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: val => "R$ " + val.toFixed(2)
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { font: {size: 14} }
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => `R$ ${parseFloat(ctx.parsed.y).toFixed(2)}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // MODAL CONFIRMAÇÃO
+  const modalConfirmar = document.getElementById("modalConfirmar");
+  const msgConfirmar = document.getElementById("msgConfirmar");
+  const btnConfirmarSim = document.getElementById("btnConfirmarSim");
+  const btnConfirmarNao = document.getElementById("btnConfirmarNao");
+
+  function mostrarModal(mensagem, onSim) {
+    msgConfirmar.textContent = mensagem;
+    modalConfirmar.classList.add("active");
+    btnConfirmarSim.onclick = () => {
+      modalConfirmar.classList.remove("active");
+      onSim();
+    };
+    btnConfirmarNao.onclick = () => {
+      modalConfirmar.classList.remove("active");
+    };
+  }
+
+  // TECLAS DE ATALHO: ALT+D, ALT+P, ALT+E, ALT+F, ALT+R para mudar de seção
+  window.addEventListener("keydown", e => {
+    if(e.altKey) {
+      switch(e.key.toLowerCase()) {
+        case "d": selecionarMenu("dashboard"); break;
+        case "p": selecionarMenu("produtos"); break;
+        case "e": selecionarMenu("pedidos"); break;
+        case "f": selecionarMenu("faturados"); break;
+        case "r": selecionarMenu("relatorios"); break;
+      }
+    }
+  });
+
+  function selecionarMenu(secao) {
+    document.querySelectorAll(".menu ul li").forEach(li => {
+      if(li.dataset.secao === secao) {
+        li.classList.add("active");
+      } else {
+        li.classList.remove("active");
+      }
+    });
+    mostrarSecao(secao);
+  }
+</script>
+</body>
+</html>
