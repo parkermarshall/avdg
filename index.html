@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AVDG Produção - Sistema ERP</title>
+  <link rel="icon" href="img/fouet.png" type="image/png" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    header.header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background: #222;
+      color: #fff;
+    }
+    .menu ul {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      gap: 15px;
+    }
+    .menu ul li {
+      cursor: pointer;
+    }
+    #relogio {
+      font-size: 14px;
+      color: #aaa;
+    }
+    #userInfo {
+      font-size: 14px;
+      color: #ccc;
+      margin-right: 10px;
+    }
+    #btnLogout {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    main {
+      padding: 20px;
+    }
+    footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #222;
+      color: #ddd;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div>
+      <strong>AVDG Produção</strong>
+    </div>
+    <div class="menu">
+      <ul>
+        <li data-secao="dashboard">Dashboard</li>
+        <li data-secao="produtos">Produtos</li>
+        <li data-secao="pedidos">Pedidos</li>
+        <li data-secao="faturados">Faturados</li>
+      </ul>
+    </div>
+    <div>
+      <span id="relogio">00:00</span>
+      <span id="userInfo"></span>
+      <button id="btnLogout">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <h1>Bem-vindo ao ERP</h1>
+    <p>Seção: <span id="secaoAtual">Dashboard</span></p>
+  </main>
+
+  <footer>
+    2025 Aline Vitalino Chocolate - Todos os Direitos Reservados.
+  </footer>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <script>
+    // TODO: Configuração Firebase do seu projeto
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_PROJECT.firebaseapp.com",
+      projectId: "SEU_PROJECT",
+      storageBucket: "SEU_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Relógio
+    function atualizarRelogio() {
+      const relogio = document.getElementById("relogio");
+      const now = new Date();
+      let h = now.getHours().toString().padStart(2, "0");
+      let m = now.getMinutes().toString().padStart(2, "0");
+      relogio.textContent = `${h}:${m}`;
+    }
+    setInterval(atualizarRelogio, 1000);
+    atualizarRelogio();
+
+    // Autenticação: verifica se está logado
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("userInfo").textContent = `${user.displayName || ''} (${user.email})`;
+        document.body.style.display = "block";
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    // Logout
+    document.getElementById("btnLogout").addEventListener("click", () => {
+      auth.signOut();
+    });
+
+    // Navegação básica de seção
+    document.querySelectorAll(".menu ul li").forEach(li => {
+      li.addEventListener("click", () => {
+        document.getElementById("secaoAtual").textContent = li.dataset.secao;
+      });
+    });
+  </script>
+</body>
+</html>
